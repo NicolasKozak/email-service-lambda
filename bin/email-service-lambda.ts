@@ -1,21 +1,21 @@
 #!/usr/bin/env node
-import 'source-map-support/register';
-import * as cdk from 'aws-cdk-lib';
-import { EmailServiceLambdaStack } from '../lib/email-service-lambda-stack';
+import { App} from 'aws-cdk-lib';
+import { EmailServiceStack } from '../lib/email-service-stack';
+import { readFileSync} from 'fs';
 
-const app = new cdk.App();
-new EmailServiceLambdaStack(app, 'EmailServiceLambdaStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
+const app = new App();
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+const EMAIL_SOURCE_BUCKET_NAME = 'data-for-email-service';  // Replace with your bucket name
+const S3_PREFIX = 'athena-output/';
+const FILENAME_PATTERN = `^${S3_PREFIX}[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\.csv$`;  // Athena query ID pattern
+const EMAIL_TEMPLATE_FILENAME = 'email_template.html'
 
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
+const emailConfig = JSON.parse(readFileSync('email-config.json', 'utf8'));
 
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
+new EmailServiceStack(app, 'EmailServiceStack', {
+  emailSourceBucketName: EMAIL_SOURCE_BUCKET_NAME,
+  filenamePattern: FILENAME_PATTERN,
+  senderEmailAddress: emailConfig.senderEmailAddress,
+  recipientEmailAddress: emailConfig.recipientEmailAddress,
+  emailTemplatePath: EMAIL_TEMPLATE_FILENAME
 });
