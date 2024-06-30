@@ -11,6 +11,8 @@ interface EmailServiceStackProps extends StackProps {
   readonly senderEmailAddress: string;
   readonly recipientEmailAddress: string;
   readonly emailTemplatePath: string;
+  readonly emailSubject?: string;
+  readonly introText?: string;
 }
 
 export class EmailServiceStack extends Stack {
@@ -20,19 +22,30 @@ export class EmailServiceStack extends Stack {
         // Reference the existing S3 bucket with the data to be mailed
         const emailSourceBucket = Bucket.fromBucketName(this, 'EmailSourceBucket', props.emailSourceBucketName);
 
+        // Prepare the environment variables for the Lambda function
+        const environment: { [key: string]: string } = {
+            TARGET_S3_BUCKET_NAME: props.emailSourceBucketName,
+            FILENAME_PATTERN: props.filenamePattern,
+            SENDER_EMAIL_ADDRESS: props.senderEmailAddress,
+            RECIPIENT_EMAIL_ADDRESS: props.recipientEmailAddress,
+            EMAIL_TEMPLATE_PATH: props.emailTemplatePath
+        };
+
+        if (props.emailSubject) {
+            environment.EMAIL_SUBJECT = props.emailSubject;
+        }
+
+        if (props.introText) {
+            environment.INTRO_TEXT = props.introText;
+        }
+
         // Create the Lambda function for sending the email
         const emailServiceLambda = new Function(this, 'EmailServiceLambda', {
             functionName: 'EmailServiceLambda',
             runtime: Runtime.PYTHON_3_9,
             handler: 'send_email.lambda_handler',
             code: Code.fromAsset('lambda'),
-            environment: {
-                TARGET_S3_BUCKET_NAME: props.emailSourceBucketName,
-                FILENAME_PATTERN: props.filenamePattern,
-                SENDER_EMAIL_ADDRESS: props.senderEmailAddress,
-                RECIPIENT_EMAIL_ADDRESS: props.recipientEmailAddress,
-                EMAIL_TEMPLATE_PATH: props.emailTemplatePath
-            },
+            environment
         });
 
         // Grant S3 read permissions to the Lambda function

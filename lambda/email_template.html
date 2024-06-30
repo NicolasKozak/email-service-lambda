@@ -5,7 +5,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>S3 CSV Upload Notification</title>
+<title>%SUBJECT%</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -26,22 +26,15 @@
 </style>
 </head>
 <body>
-  <p>Please find the attached CSV file:</p>
+  <p>%INTRO_TEXT%</p>
   <table>
     <thead>
-      <tr>
-        <th>Employee ID</th>
-        <th>First Name</th>
-        <th>Last Name</th>
-        <th>Email</th>
-        <th>Department</th>
-        <th>Salary</th>
-        <th>Hire Date</th>
-      </tr>
+      %HEADERS%
     </thead>
     <tbody>
-       %ROWS%
+      %ROWS%
     </tbody>
   </table>
+  <p>Email sent at: %TIMESTAMP%</p>
 </body>
 </html>
