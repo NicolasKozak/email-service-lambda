@@ -43,7 +43,7 @@ export class EmailServiceStack extends Stack {
         const emailServiceLambda = new Function(this, 'EmailServiceLambda', {
             functionName: 'EmailServiceLambda',
             runtime: Runtime.PYTHON_3_9,
-            handler: 'send_email.lambda_handler',
+            handler: 'email_service_lambda.lambda_handler',
             code: Code.fromAsset('lambda'),
             environment
         });
