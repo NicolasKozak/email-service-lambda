@@ -44,7 +44,7 @@ export class EmailServiceStack extends Stack {
             functionName: 'EmailServiceLambda',
             runtime: Runtime.PYTHON_3_9,
             handler: 'email_service_lambda.lambda_handler',
-            code: Code.fromAsset('lambda'),
+            code: Code.fromAsset('_lambda'),
             environment
         });
 

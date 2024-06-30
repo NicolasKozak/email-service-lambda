@@ -3,7 +3,7 @@ import boto3
 import re
 import csv
 from typing import List, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 
 s3_client = boto3.client('s3')
 ses_client = boto3.client('ses')
@@ -120,13 +120,15 @@ def lambda_handler(event: dict, context: object) -> dict:
         headers, rows = parse_csv(file_content)
 
         # Read email template from file
-        with open(os.environ['EMAIL_TEMPLATE_PATH'], 'r') as file:
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        template_path = os.path.join(current_dir, os.environ['EMAIL_TEMPLATE_PATH'])
+        with open(template_path, 'r') as file:
             email_template = file.read()
 
         # Populate email template and log email body to CloudWatch
         subject = os.environ.get('EMAIL_SUBJECT', 'S3 CSV Upload Notification')
         intro_text = os.environ.get('EMAIL_INTRO_TEXT', 'Please find the attached CSV file:')
-        timestamp = datetime.now(datetime.UTC).strftime('%Y-%m-%d %H:%M:%S UTC')
+        timestamp = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
 
         email_body = generate_email_body(headers, rows, email_template, subject, intro_text, timestamp)
         print(f'Email body:\n{email_body}')

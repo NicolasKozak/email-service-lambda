@@ -7,3 +7,5 @@ node_modules
 .cdk.staging
 cdk.out
 email-config.json
+venv
+**/__pycache__
