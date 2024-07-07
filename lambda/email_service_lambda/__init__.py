@@ -1,0 +1,1 @@
+from .email_service_lambda import lambda_handler

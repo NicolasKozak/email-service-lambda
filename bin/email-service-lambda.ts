@@ -1,16 +1,24 @@
 #!/usr/bin/env node
 import { App} from 'aws-cdk-lib';
 import { EmailServiceStack } from '../lib/email-service-stack';
-import { readFileSync} from 'fs';
+import {
+  EMAIL_INTRO_TEXT,
+  EMAIL_SOURCE_BUCKET_NAME,
+  EMAIL_SUBJECT,
+  EMAIL_TEMPLATE_PATH,
+  FILENAME_PATTERN,
+  RECIPIENT_EMAIL_ADDRESS,
+  SENDER_EMAIL_ADDRESS
+} from '../constants';
 
 const app = new App();
 
-const emailConfig = JSON.parse(readFileSync('email-config.json', 'utf8'));
-
 new EmailServiceStack(app, 'EmailServiceStack', {
-  emailSourceBucketName: emailConfig.emailSourceBucketName,
-  filenamePattern: emailConfig.filenamePattern,
-  senderEmailAddress: emailConfig.senderEmailAddress,
-  recipientEmailAddress: emailConfig.recipientEmailAddress,
-  emailTemplatePath: emailConfig.emailTemplatePath
+  emailSourceBucketName: EMAIL_SOURCE_BUCKET_NAME,
+  filenamePattern: FILENAME_PATTERN,
+  senderEmailAddress: SENDER_EMAIL_ADDRESS,
+  recipientEmailAddress: RECIPIENT_EMAIL_ADDRESS,
+  emailTemplatePath: EMAIL_TEMPLATE_PATH,
+  emailSubject: EMAIL_SUBJECT,
+  emailIntroText: EMAIL_INTRO_TEXT 
 });

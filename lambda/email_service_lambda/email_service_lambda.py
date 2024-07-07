@@ -5,8 +5,10 @@ import csv
 from typing import List, Tuple
 from datetime import datetime, timezone
 
+
 s3_client = boto3.client('s3')
 ses_client = boto3.client('ses')
+
 
 def parse_csv(file_content: str) -> Tuple[List[str], List[List[str]]]:
     """Parse CSV content and return headers and rows.
@@ -31,6 +33,7 @@ def parse_csv(file_content: str) -> Tuple[List[str], List[List[str]]]:
 
     return headers, rows
 
+
 def generate_email_body(headers: List[str], rows: List[List[str]], email_template: str, subject: str, intro_text: str, timestamp: str) -> str:
     """Generate email body by replacing placeholders in the template with actual data.
     
@@ -54,7 +57,7 @@ def generate_email_body(headers: List[str], rows: List[List[str]], email_templat
         for row in rows
     )
 
-    # Replace placeholders in the email template with actual data
+    # Replace placeholders in the email template with the given data
     email_body = (email_template.replace('%HEADERS%', headers_html)
                                 .replace('%ROWS%', rows_html)
                                 .replace('%SUBJECT%', subject)
@@ -62,6 +65,7 @@ def generate_email_body(headers: List[str], rows: List[List[str]], email_templat
                                 .replace('%TIMESTAMP%', timestamp)
     )
     return email_body
+
 
 def send_email(subject: str, email_body: str) -> dict:
     """Send an email using AWS SES.
@@ -92,6 +96,7 @@ def send_email(subject: str, email_body: str) -> dict:
         }
     )
 
+
 def lambda_handler(event: dict, context: object) -> dict:
     """Lambda function handler for processing S3 CSV upload notifications.
     
@@ -102,10 +107,11 @@ def lambda_handler(event: dict, context: object) -> dict:
     Returns:
         dict: A status dictionary indicating success or failure.
     """
+    # Read bucket name and object key from S3 event data
     s3_bucket_name = event['Records'][0]['s3']['bucket']['name']
     s3_object_key = event['Records'][0]['s3']['object']['key']
 
-    # Read the file pattern for triggerin email from an environment variable
+    # Check for data that matches the expected filename pattern
     filename_pattern = re.compile(os.environ['FILENAME_PATTERN'])
 
     if not filename_pattern.search(s3_object_key):
@@ -125,12 +131,14 @@ def lambda_handler(event: dict, context: object) -> dict:
         with open(template_path, 'r') as file:
             email_template = file.read()
 
-        # Populate email template and log email body to CloudWatch
-        subject = os.environ.get('EMAIL_SUBJECT', 'S3 CSV Upload Notification')
-        intro_text = os.environ.get('EMAIL_INTRO_TEXT', 'Please find the attached CSV file:')
+        # Populate email template with data
+        subject = os.environ['EMAIL_SUBJECT']
+        intro_text = os.environ['EMAIL_INTRO_TEXT']
         timestamp = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
 
         email_body = generate_email_body(headers, rows, email_template, subject, intro_text, timestamp)
+
+        # Log email body to CloudWatch
         print(f'Email body:\n{email_body}')
 
         # Send email
